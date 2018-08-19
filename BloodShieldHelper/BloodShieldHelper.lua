@@ -46,6 +46,10 @@ function f:CalcHeal(lat)
 	local heal = dmg*0.25
 	local heal2 = (dmg-dmgwipe)*0.25
 
+	f:UpdateHealText(heal, heal2, dmgwipe_t)
+end
+
+function f:UpdateHealText(heal, nextheal, dmgtimer)
 	local mheal = curmax*0.07
 	local mrating, _ = GetMasteryEffect()
 	local vrating = 100+GetCombatRatingBonus(CR_VERSATILITY_DAMAGE_DONE)
@@ -55,18 +59,17 @@ function f:CalcHeal(lat)
 		f.healtext:SetText(floor(heal*mrating*vrating/10000))
 		if (heal2>mheal) then
 			f.healtext2:SetTextColor(unpack(ns.colors[3]))
-			f.healtext2:SetText(floor(heal2*mrating*vrating/10000))
+			f.healtext2:SetText(floor(nextheal*mrating*vrating/10000))
 		else
 			f.healtext2:SetTextColor(unpack(ns.colors[2]))
 			f.healtext2:SetText(floor(mheal*mrating*vrating/10000))
 		end
-		f.countdown:SetText(round(dmgwipe_t,1))
+		f.countdown:SetText(round(dmgtimer,1))
 	else
 		f.healtext:SetTextColor(unpack(ns.colors[2]))
 		f.healtext:SetText(floor(mheal*mrating*vrating/10000))
 		f.countdown:SetText("")
 		f.healtext2:SetText("")
-
 	end
 end
 
@@ -76,7 +79,6 @@ function f:Timer(e)
 		f:CalcHeal(0)
 		lastupdate = e_time
 	end
-
 end
 
 function f:CheckSpecialization()
@@ -86,19 +88,25 @@ end
 
 function f:HandleEvent(event,...)
 	local arg = ...
-	if (event == "UNIT_MAXHEALTH" and arg == "player") then
+	if (event == "PLAYER_ENTERING_WORLD") then
+		curmax = UnitHealthMax("player")
+		f:UpdateHealText(0, 0, 0)
+
+	elseif (event == "UNIT_MAXHEALTH" and arg == "player") then
 		curmax = UnitHealthMax("player")
 
 	elseif (event == "COMBAT_LOG_EVENT_UNFILTERED") then
 		f:HandleCombatLogEvent()
 
 	elseif (event=="PLAYER_REGEN_ENABLED") then
+		f:DisableTimer()
 		if not(ns.forceshow) then
 			f:Deactivate()
 		end
 
 	elseif (event=="PLAYER_REGEN_DISABLED") then
 		f:Activate()
+		f:EnableTimer()
 
 	elseif (event=="PLAYER_TALENT_UPDATE") then
 		isBloodSpec = f:CheckSpecialization()
@@ -215,11 +223,12 @@ function f:Activate()
 		pguid = UnitGUID("player")
 	end
 
+	curmax = UnitHealthMax("player")
+
 	f:RegisterEvent("UNIT_HEALTH")
 	f:RegisterEvent("UNIT_MAXHEALTH")
 	f:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	f:SetScript("OnUpdate", f.Timer)
-	curmax = UnitHealthMax("player")
+
 	f:Show()
 	isActive = true
 end
@@ -231,16 +240,26 @@ function f:Deactivate()
 	f:UnregisterEvent("UNIT_HEALTH")
 	f:UnregisterEvent("UNIT_MAXHEALTH")
 	f:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	f:SetScript("OnUpdate", nil)
-	icounter=1
-	wipe(healthvals)
+
+	f:DisableTimer()
+
 	f:Hide()
 	isActive = false
 end
 
+function f:EnableTimer()
+	f:SetScript("OnUpdate", f.Timer)
+end
+
+function f:DisableTimer()
+	icounter=1
+	wipe(healthvals)
+	f:SetScript("OnUpdate", nil)
+end
 
 f:RegisterEvent("ADDON_LOADED")
 
+f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:RegisterEvent("PLAYER_TALENT_UPDATE")
 f:RegisterEvent("PLAYER_REGEN_DISABLED")
 f:RegisterEvent("PLAYER_REGEN_ENABLED")
