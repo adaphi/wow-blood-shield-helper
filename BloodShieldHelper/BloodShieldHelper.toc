@@ -1,0 +1,8 @@
+## Interface: 40200
+## Title: Blood Shield Helper
+## Author: DarkStarX
+## Version: 1.0
+## Notes: Shows the Blood Shield value
+## SavedVariables: BloodShieldHelper_S
+BloodShieldHelper.lua
+BloodShieldHelperConfig.lua
