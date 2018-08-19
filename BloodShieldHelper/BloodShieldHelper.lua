@@ -64,7 +64,7 @@ function f:CalcHeal(lat)
 	else
 		f.healtext:SetTextColor(unpack(ns.colors[2]))
 		f.healtext:SetText(floor(mheal*mrating*vrating/10000))
-		f.countdown:SetText(round(dmgwipe_t,1))
+		f.countdown:SetText("")
 		f.healtext2:SetText("")
 
 	end
