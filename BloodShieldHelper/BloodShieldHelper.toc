@@ -1,6 +1,6 @@
-## Interface: 40200
+## Interface: 80000
 ## Title: Blood Shield Helper
-## Author: DarkStarX
+## Author: Asra
 ## Version: 1.0
 ## Notes: Shows the Blood Shield value
 ## SavedVariables: BloodShieldHelper_S

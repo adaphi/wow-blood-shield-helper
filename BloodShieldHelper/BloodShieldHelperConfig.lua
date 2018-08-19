@@ -1,30 +1,25 @@
 local _,ns = ...
 local config = CreateFrame("Frame")
 ns.config = config
+
 local currentcolor
 
-
-
-
-
-
 local function changedCallback(restore)
+	local newR, newG, newB, newA
+	if restore then
+		newR, newG, newB, newA = unpack(restore)
+	else
+		newA, newR, newG, newB = OpacitySliderFrame:GetValue(), ColorPickerFrame:GetColorRGB()
+	end
 
- local newR, newG, newB, newA
- if restore then
-   newR, newG, newB, newA = unpack(restore)
- else
-   newA, newR, newG, newB = OpacitySliderFrame:GetValue(), ColorPickerFrame:GetColorRGB()
- end
-
- r, g, b, a = newR, newG, newB, newA
- currentcolor.colorSwatch:SetVertexColor(r,g,b,a)
- ns.colors[currentcolor.id] = {r,g,b,a}
- config:ChangeColors()
+	r, g, b, a = newR, newG, newB, newA
+	currentcolor.colorSwatch:SetVertexColor(r,g,b,a)
+	ns.colors[currentcolor.id] = {r,g,b,a}
+	config:ChangeColors()
 end
 
 function config:ChangeColors()
-	ns.frame.texture:SetTexture(unpack(ns.colors[1]))
+	ns.frame.texture:SetColorTexture(unpack(ns.colors[1]))
 	ns.frame.healtext:SetTextColor(unpack(ns.colors[2]))
 	ns.frame.countdown:SetTextColor(unpack(ns.colors[4]))
 	ns.frame.healtext2:SetTextColor(unpack(ns.colors[3]))
@@ -43,12 +38,6 @@ function config:ConfigColor_OnClick()
 	ColorPickerFrame:Show()
 
 end
-
-function config:ChangeState()
-	ns.debugmode = self:GetChecked()
-	BloodShieldHelper_S.debugmode = ns.debugmode
-end
-
 
 function config:Init()
 	ns.colors = BloodShieldHelper_S.colors
@@ -74,7 +63,7 @@ function config:Init()
 	ConfigColor1.texture = ConfigColor1:CreateTexture(nil, "BACKGROUND")
 	ConfigColor1.texture:SetWidth(16)
 	ConfigColor1.texture:SetHeight(16)
-	ConfigColor1.texture:SetTexture(1, 1, 1)
+	ConfigColor1.texture:SetColorTexture(1, 1, 1)
 	ConfigColor1.texture:SetPoint("CENTER", ConfigColor1.colorSwatch)
 	ConfigColor1.texture:Show()
 
@@ -105,7 +94,7 @@ function config:Init()
 	ConfigColor2.texture = ConfigColor2:CreateTexture(nil, "BACKGROUND")
 	ConfigColor2.texture:SetWidth(16)
 	ConfigColor2.texture:SetHeight(16)
-	ConfigColor2.texture:SetTexture(1, 1, 1)
+	ConfigColor2.texture:SetColorTexture(1, 1, 1)
 	ConfigColor2.texture:SetPoint("CENTER", ConfigColor2.colorSwatch)
 	ConfigColor2.texture:Show()
 
@@ -135,7 +124,7 @@ function config:Init()
 	ConfigColor3.texture = ConfigColor3:CreateTexture(nil, "BACKGROUND")
 	ConfigColor3.texture:SetWidth(16)
 	ConfigColor3.texture:SetHeight(16)
-	ConfigColor3.texture:SetTexture(1, 1, 1)
+	ConfigColor3.texture:SetColorTexture(1, 1, 1)
 	ConfigColor3.texture:SetPoint("CENTER", ConfigColor3.colorSwatch)
 	ConfigColor3.texture:Show()
 
@@ -165,7 +154,7 @@ function config:Init()
 	ConfigColor4.texture = ConfigColor4:CreateTexture(nil, "BACKGROUND")
 	ConfigColor4.texture:SetWidth(16)
 	ConfigColor4.texture:SetHeight(16)
-	ConfigColor4.texture:SetTexture(1, 1, 1)
+	ConfigColor4.texture:SetColorTexture(1, 1, 1)
 	ConfigColor4.texture:SetPoint("CENTER", ConfigColor4.colorSwatch)
 	ConfigColor4.texture:Show()
 
@@ -178,17 +167,39 @@ function config:Init()
 	config.DebugMode = DebugMode
 	DebugMode.id = "DebugMode"
 	DebugMode:SetPoint( "TOPLEFT", ConfigColor4,"BOTTOMLEFT" ,0, -16 )
-	DebugMode:SetScript("onClick",config.ChangeState)
+	DebugMode:SetScript("onClick", config.UpdateDebugMode)
 	DebugMode.Text:SetText( "Debug mode (printing out the real Blood Shield size after using Death Strike)" )
-	if(BloodShieldHelper_S.debugmode) then
+	if (BloodShieldHelper_S.debugmode) then
+		ns.debugmode=true
 		DebugMode:SetChecked(1)
-		ns.debugmode = 1
 	end
 
+	local AlwaysShow = CreateFrame( "CheckButton", nil, config, "InterfaceOptionsCheckButtonTemplate" )
+	config.AlwaysShow = AlwaysShow
+	AlwaysShow.id = "AlwaysShow"
+	AlwaysShow:SetPoint( "TOPLEFT", DebugMode,"BOTTOMLEFT" ,0, -16 )
+	AlwaysShow:SetScript("onClick", config.UpdateAlwaysShow)
+	AlwaysShow.Text:SetText( "Always show the frame, even out of combat." )
+	if (BloodShieldHelper_S.forceshow) then
+		ns.forceshow=true
+		AlwaysShow:SetChecked(1)
+	end
 
- InterfaceOptions_AddCategory(config)
+	InterfaceOptions_AddCategory(config)
 
+end
 
+function config:UpdateDebugMode()
+	 BloodShieldHelper_S.debugmode = self:GetChecked()
+	 ns.debugmode =  BloodShieldHelper_S.debugmode
+end
 
-
+function config:UpdateAlwaysShow()
+	 BloodShieldHelper_S.forceshow = self:GetChecked()
+	 ns.forceshow =  BloodShieldHelper_S.forceshow
+	 if (BloodShieldHelper_S.forceshow) then
+		 ns.frame.Activate()
+	 else
+		 ns.frame.Deactivate()
+	 end
 end
