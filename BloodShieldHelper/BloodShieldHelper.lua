@@ -102,8 +102,10 @@ function f:HandleEvent(event,...)
 
 	elseif (event=="PLAYER_TALENT_UPDATE") then
 		isBloodSpec = f:CheckSpecialization()
-		if (ns.forceshow) then
+		if (isBloodSpec and ns.forceshow) then
 			f:Activate()
+		else
+			f:Deactivate()
 		end
 
 	elseif (event == "ADDON_LOADED" and arg == "BloodShieldHelper") then
