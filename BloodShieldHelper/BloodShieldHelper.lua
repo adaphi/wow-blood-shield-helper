@@ -13,6 +13,7 @@ local icounter=1
 
 local isBloodSpec=false
 local isActive=false
+local isTimerActive=false
 
 BloodShieldHelper_S = {}
 
@@ -94,6 +95,9 @@ function f:HandleEvent(event,...)
 
 	elseif (event == "UNIT_MAXHEALTH" and arg == "player") then
 		curmax = UnitHealthMax("player")
+		if not(isTimerActive) then
+			f:UpdateHealText(0, 0, 0)
+		end
 
 	elseif (event == "COMBAT_LOG_EVENT_UNFILTERED") then
 		f:HandleCombatLogEvent()
@@ -249,12 +253,14 @@ end
 
 function f:EnableTimer()
 	f:SetScript("OnUpdate", f.Timer)
+	isTimerActive=true
 end
 
 function f:DisableTimer()
 	icounter=1
 	wipe(healthvals)
 	f:SetScript("OnUpdate", nil)
+	isTimerActive=false
 end
 
 f:RegisterEvent("ADDON_LOADED")
