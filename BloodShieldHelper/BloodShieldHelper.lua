@@ -57,7 +57,7 @@ function f:UpdateHealText(heal, nextheal, dmgtimer)
 	if (heal>mheal) then
 		f.healtext:SetTextColor(unpack(ns.colors[3]))
 		f.healtext:SetText(floor(heal*mrating*vrating/10000))
-		if (heal2>mheal) then
+		if (nextheal>mheal) then
 			f.healtext2:SetTextColor(unpack(ns.colors[3]))
 			f.healtext2:SetText(floor(nextheal*mrating*vrating/10000))
 		else
